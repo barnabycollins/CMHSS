@@ -3,6 +3,7 @@ import time
 import json
 import mercantile # handles conversion from co-ords to tiles
 import geotiler # allows you to get actual map tile images
+from shapely.geometry import shape
 
 
 
@@ -67,7 +68,12 @@ print(f"bam... all done. Loaded Southfields ({sum([len(southfields[i]) for i in 
 
 for i in southfields:
 
-    print(southfields[i])
+    print(southfields[i][i][0])
+
+    for j in southfields[i][i]:
+        s = shape(json.loads(i))
+    
+    print(shape.centroid)
 
     """feature = json.loads(southfields[i][i][0])
     print(f"\n{i} - {feature['properties']['name']} ({feature['properties']['osm_id']}):")

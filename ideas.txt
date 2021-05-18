@@ -1,0 +1,6 @@
+Sally idea (city planning for women):
+- Judge how radial transport is (measure standard deviation of station connectedness?)
+- Measure mixed-use areas
+- Compare developedness of car infrastructure to public transport (car parks vs stations / bus stops?)
+- Number of steps (bad for buggies etc)
+- Bike shares inconclusive
