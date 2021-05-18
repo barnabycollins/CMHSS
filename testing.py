@@ -56,7 +56,7 @@ def findExtentFromFeatures(data):
 """
 
 print("k cool")
-
+"""
 start = time.time()
 southfields = pydriosm.reader.parse_osm_pbf("data/Southfields.osm.pbf")
 end = time.time()
@@ -74,8 +74,9 @@ for i in southfields:
         s = shape(json.loads(i))
     
     print(shape.centroid)
-
-    """feature = json.loads(southfields[i][i][0])
+"""
+"""
+    feature = json.loads(southfields[i][i][0])
     print(f"\n{i} - {feature['properties']['name']} ({feature['properties']['osm_id']}):")
 
     print(feature)"""
@@ -83,11 +84,11 @@ for i in southfields:
     #for j in feature["geometry"]["coordinates"]:
     #    print(j)
 
-
+"""
 image = geotiler.render_map(map)
 
 image.save('./maps/southfields.png')
-
+"""
 """
 start = time.time()
 durham = pydriosm.reader.parse_osm_pbf("data/Durham.osm.pbf")
@@ -107,7 +108,16 @@ end = time.time()
 
 # 6.5 mins
 print(f"bam... all done. Loaded Edinburgh ({sum([len(edinburgh[i]) for i in edinburgh])} things) in {end-start} seconds.")
+"""
 
+start = time.time()
+london = pydriosm.reader.parse_osm_pbf("data/London.osm.pbf")
+end = time.time()
+
+# 13 mins
+print(f"bam... all done. Loaded London ({sum([len(london[i]) for i in london])} things) in {end-start} seconds.")
+
+"""
 start = time.time()
 england = pydriosm.reader.parse_osm_pbf("data/england-latest.osm.pbf")
 end = time.time()
