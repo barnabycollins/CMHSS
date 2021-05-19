@@ -44,7 +44,7 @@
 \lstset{
   basicstyle=\ttfamily,
   mathescape
-}
+}	
 % These packages are all incorporated in the memoir class to one degree or another...
 
 %%% HEADERS & FOOTERS
@@ -76,7 +76,8 @@
 
 %%% The "real" document content comes below...
 
-\title{\vspace{-1.6cm}Bioinformatics Assignment}
+\title{\vspace{-1.6cm}Computational Modelling in the Humanities and Social Sciences Assignment \\
+	\vspace{0.5cm}\large Measuring city accessibility using OpenStreetMap data\vspace{-0.3cm}}
 \author{zrlr73}
 \date{} % Activate to display a given date or no date (if empty),
          % otherwise the current date is printed 
@@ -84,6 +85,41 @@
 \begin{document}
 \maketitle
 
+\section{Introduction}
 
+As an occasional OpenStreetMap (OSM) contributor, I decided that using data directly from OSM in my assignment would be interesting. When a friend told me about a problem she had read about in \textit{Invisible Women} by Caroline Criado Pérez, I decided to try and produce a tool that is applicable to this issue.
+
+The problem is that cities are designed by commuting men, and therefore can end up optimised for this subset of the population, to the detriment of others. The book specifically discusses women, who have different travel patterns to men due to their (usually) increased care responsibilities and different way of life.
+
+For example, many cities feature a 'radial' transit network: designed with links that lead from the suburbs into the city centre, with infrastructure for transferring between these transit lines in the centre. Unfortunately, this system often fails to serve those who do not commute into the city centre for their work on a daily basis. Those who, for example, only need to travel among the suburbs, find themselves facing unreasonable journey times.
+
+Similarly, cities are often designed for cars. With many households owning one or no cars, and that car usually being primarily used by a man, this disproportionately benefits men - not to mention the fact that, thanks to space constraints, more developed roads often worsen the experience for pedestrians. Pavements may be partially blocked with street furniture such as street lights and parking machines, or otherwise too narrow for buggies or for people with shopping to pass each other comfortably. As it is usually women who perform errands such as taking children out of the house or going to the shops, they are the ones who bear most of the brunt for these poor design choices.
+
+Clearly, I am unable to directly change these problems. However, I thought it would be interesting to attempt to create a tool that, given an OpenStreetMap file covering a city, will score that city on its accessibility (primarily, its accessibility to women). Given that OSM is a Volunteered Geographic Information (VGI) project, this will be complicated by the fact that I cannot rely on the data to be accurate, current or even present (with the last being the most likely scenario for many cities). Therefore I will need to attempt to utilise metrics that are (relatively) unaffected by lack of correct data.
+
+\section{Tools Utilised}
+For this project, I have employed a number of tools. These have primarily been on the map import side, and are as follows:
+
+\subsection{BBBike Download Server}
+This program, available at \href{https://download.bbbike.org/osm/}{https://download.bbbike.org/osm/}, allows users to download extracts of the OSM map. While it does feature pre-extracted files for many urban areas, I also chose to extract custom data for a number of smaller areas, including Durham, Newcastle, and Southfields (an area of south-west London in which I used to live). These files were all downloaded in Protocolbuffer Binary Format (PBF; \texttt{.osm.pbf}) file format.
+
+\subsection{PyDriosm}
+PyDriosm is an open-source library which provides features for the parsing and storage of OSM data. Its main use in my software is to parse downloaded PBF files with the \href{https://pydriosm.readthedocs.io/en/latest/_generated/pydriosm.reader.parse_osm_pbf.html}{\texttt{pydriosm.reader.parse\_osm\_pbf()}} function, returning the data as a Pandas DataFrame. PyDriosm can be installed using \texttt{pip}, with the package name \texttt{pydriosm}.
+
+When installing on Windows 10 / Python 3.9.2, I had some trouble building the \texttt{GDAL} dependency - resolving this required installing C++ build tools from Microsoft and then manually installing \texttt{GDAL} itself using a wheel file. More information on this can be found in the \href{https://pydriosm.readthedocs.io/en/latest/installation.html}{PyDriosm documentation}.
+
+\subsection{Pickle?}
+
+\subsection{Shapely?}
+
+
+\section{Implementation}
+
+
+\section{Evaluation}
+
+\section{Conclusions}
+
+\section{References?}
 
 \end{document}
