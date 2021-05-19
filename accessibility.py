@@ -4,6 +4,7 @@ import json
 from shapely.geometry import shape
 import re
 import pickle
+import pandas
 
 def parsePBF(cityFile: str, useCache: bool = True):
     cityName = re.search(r'^(?:.*\/)?([a-zA-Z]+)\.osm\.pbf$', cityFile).group(1)
@@ -18,7 +19,7 @@ def parsePBF(cityFile: str, useCache: bool = True):
 
         except IOError:
             useCache = False
-            print(f"No cache found. Reading in city file '{cityName}'...")
+            print(f"No cache found for '{cityName}'. Reading in city file...")
 
     if (not useCache):
         start = time.time()
@@ -32,18 +33,43 @@ def parsePBF(cityFile: str, useCache: bool = True):
 
     return city
 
+def tagSearch(tags, item):
+    
+    if (isinstance(tags, pandas.Series)):
+        tags = tags.to_dict()
+    
+    elif (tags == None):
+        return None
+
+    if (item not in tags):
+        if ("other_tags" in tags):
+            return tagSearch(tags["other_tags"], item)
+        
+        return None
+    
+    return tags[item]
+
+
 def generateScore(city: dict):
     print("Analysing city...\n")
 
     for i in range(len(city["points"])):
         struct = city["points"].loc[i]
-        tags = struct["other_tags"]
 
-        if (tags.get("traffic_calming") != None):
-            print(repr(tags))
-        
-        if (tags.get("railway") == "station" or tags.get("railway") == "halt" or tags.get("public_transport" == "station")):
-            print(tags.get("name"))
+        dave = tagSearch(struct, "railway")
+
+        if (dave != None):
+            print(struct.to_dict())
+
+    print("ho ho")
+
+    for i in range(len(city["lines"])):
+        struct = city["lines"].loc[i]
+
+        dave = tagSearch(struct, "railway")
+
+        if (dave != None):
+            print(struct.to_dict())
 
 if (__name__ == "__main__"):
     """
@@ -55,5 +81,5 @@ if (__name__ == "__main__"):
     """
 
     #"""
-    generateScore(parsePBF("data/Southfields.osm.pbf"))
+    generateScore(parsePBF("data/Newcastle.osm.pbf"))
     #"""
