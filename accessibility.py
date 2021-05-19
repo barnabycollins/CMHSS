@@ -22,7 +22,7 @@ def parsePBF(cityFile: str, useCache: bool = True):
 
     if (not useCache):
         start = time.time()
-        city = pydriosm.reader.parse_osm_pbf(cityFile)
+        city = pydriosm.reader.parse_osm_pbf(cityFile, transform_other_tags=True)
         end = time.time()
 
         print(f"Loaded {cityFile} in {(end-start):.2f} seconds. Writing to cache...")
@@ -35,15 +35,25 @@ def parsePBF(cityFile: str, useCache: bool = True):
 def generateScore(city: dict):
     print("Analysing city...\n")
 
-    for i in city["points"]["points"]:
-        struct = json.loads(i)
-        geometry = struct["geometry"]
-        tags = struct["properties"]
+    for i in range(len(city["points"])):
+        struct = city["points"].loc[i]
+        tags = struct["other_tags"]
+
+        if (tags.get("traffic_calming") != None):
+            print(repr(tags))
         
         if (tags.get("railway") == "station" or tags.get("railway") == "halt" or tags.get("public_transport" == "station")):
             print(tags.get("name"))
 
 if (__name__ == "__main__"):
+    """
+    parsePBF("data/Southfields.osm.pbf")
     parsePBF("data/Durham.osm.pbf")
     parsePBF("data/Edinburgh.osm.pbf")
-    parsePBF("data/Southfields.osm.pbf")
+    parsePBF("data/London.osm.pbf")
+    parsePBF("data/England.osm.pbf")
+    """
+
+    #"""
+    generateScore(parsePBF("data/Southfields.osm.pbf"))
+    #"""
