@@ -4,3 +4,4 @@ Sally idea (city planning for women):
 - Compare developedness of car infrastructure to public transport (car parks vs stations / bus stops?)
 - Number of steps (bad for buggies etc)
 - Bike shares inconclusive
+- Density of postboxes / benches / playgrounds etc...?
