@@ -2,7 +2,7 @@ from utils import *
 from tqdm import tqdm
 import math
 
-def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True, doInfrastructureComparison: bool = True):
+def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, doInfrastructureComparison: bool = True):
     """Generates and returns an accessibility score for a given parsed city file"""
     print("Analysing city...\n")    
 
@@ -63,15 +63,20 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True,
         retail = []
         supermarkets = []
         busStops = []
-
+        playgrounds = []
+        doctors = []
         
+        # POINTS
         for i in tqdm(range(len(city["points"])), desc="Getting point data"):
             struct = city["points"].loc[i]
             coordinate = struct["coordinates"]
             
-            [building, amenity, shop, highway, railway] = findTags(struct, ["building", "amenity", "shop", "highway", "railway"])
+            [building, amenity, shop, highway, railway, leisure] = findTags(struct, ["building", "amenity", "shop", "highway", "railway", "leisure"])
 
-            if (highway == "bus_stop" or railway == "tram_stop"):
+            if (amenity == "doctors"):
+                doctors.append(coordinate)
+
+            """if (highway == "bus_stop" or railway == "tram_stop"):
                 busStops.append(coordinate)
 
             elif (building == "retail"):
@@ -82,12 +87,19 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True,
             
             elif (amenity == "school"):
                 schools.append(coordinate)
+            
+            elif (leisure == "playground"):
+                playgrounds.append(coordinate)
+            
+            elif (amenity == "doctors"):
+                doctors.append(coordinate)"""
 
+        # AREAS
         for i in tqdm(range(len(city["multipolygons"])), desc="Getting building data"):
             struct = city["multipolygons"].loc[i]
             coordinate = getCoord(struct["coordinates"])
 
-            [building, buildingFlats, amenity, shop] = findTags(struct, ["building", "building:flats", "amenity", "shop"])
+            [building, buildingFlats, amenity, shop, leisure] = findTags(struct, ["building", "building:flats", "amenity", "shop", "leisure"])
             
             if (buildingFlats != None):
                 dwellings.append((buildingFlats, coordinate))
@@ -101,7 +113,10 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True,
             elif (building == "residential"):
                 dwellings.append((3, coordinate))
             
-            elif (building == "retail"):
+            elif (amenity == "doctors"):
+                doctors.append(coordinate)
+            
+            """elif (building == "retail"):
                 retail.append(coordinate)
 
                 if (shop == "supermarket"):
@@ -109,14 +124,23 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True,
             
             elif (amenity == "school"):
                 schools.append(coordinate)
+            
+            elif (leisure == "playground"):
+                playgrounds.append(coordinate)
+            
+            elif (amenity == "doctors"):
+                doctors.append(coordinate)"""
         
-        [schools, retail, supermarkets, busStops] = sortByLongitude([schools, retail, supermarkets, busStops])
+
+        [schools, retail, supermarkets, busStops, playgrounds, doctors] = sortByLongitude([schools, retail, supermarkets, busStops, playgrounds, doctors])
         
         totalHouseholds = 0
         totalDistance_Schools = 0
         totalDistance_Shops = 0
         totalDistance_Supermarkets = 0
         totalDistance_BusStops = 0
+        totalDistance_Playgrounds = 0
+        totalDistance_Doctors = 0
         for h in tqdm(dwellings, desc="Analysing zoning"):
             coords = h[1]
             numHouseholds = h[0]
@@ -137,6 +161,12 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True,
             
             if (len(busStops) != 0):
                 totalDistance_BusStops += numHouseholds * findMinDistance(coords, busStops)
+            
+            if (len(playgrounds) != 0):
+                totalDistance_Playgrounds += numHouseholds * findMinDistance(coords, playgrounds)
+            
+            if (len(doctors) != 0):
+                totalDistance_Doctors += numHouseholds * findMinDistance(coords, doctors)
                 
             totalHouseholds += numHouseholds
         
@@ -157,6 +187,14 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True,
         if (totalDistance_BusStops != 0):
             avgDistanceToBusStops = totalDistance_BusStops / totalHouseholds
             print(f"Average distance to bus (or tram) stop: {avgDistanceToBusStops*1000:.0f}m")
+        
+        if (totalDistance_Playgrounds != 0):
+            avgDistanceToPlaygrounds = totalDistance_Playgrounds / totalHouseholds
+            print(f"Average distance to playground: {avgDistanceToPlaygrounds*1000:.0f}m")
+        
+        if (totalDistance_Doctors != 0):
+            avgDistanceToDoctors = totalDistance_Doctors / totalHouseholds
+            print(f"Average distance to doctor: {avgDistanceToDoctors*1000:.0f}m")
     
 
 
