@@ -2,7 +2,7 @@ from utils import *
 from tqdm import tqdm
 import math
 
-def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True):
+def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True, doInfrastructureComparison: bool = True):
     """Generates and returns an accessibility score for a given parsed city file"""
     print("Analysing city...\n")    
 
@@ -37,6 +37,8 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True)
         variance = sum([(n - averageNumLines)**2 for n in stationLineCounts]) / len(stationLineCounts)
         std = variance**0.5
 
+        print()
+
         percentWithNoLines = numWithNoLines*100/totalStations
         qualityStatement = ""
         skipSection = False
@@ -54,41 +56,32 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True)
             print(f"Standard deviation in number of lines per station is {std}.")
             print(f"{percentWithNoLines:.1f}% of stations had no line information.{qualityStatement}")
 
-    """
-    print("\n\n===== LINES =====\n")
-
-    
-    for i in range(len(city["lines"])):
-        struct = city["lines"].loc[i]
-
-        name = tagSearch(struct, "name")
-        railway = tagSearch(struct, "railway")
-
-        if (railway == "station" and name != None):
-            print(name)
-    """
-    
-    """
-    print("\n\n===== MULTILINESTRINGS =====\n")
-
-
-    for i in range(len(city["multilinestrings"])):
-        struct = city["multilinestrings"].loc[i]
-
-        [name, route, fr0m, t0, via] = findTags(struct, ["name", "route", "from", "to", "via"])
-
-        if (route == "train"):
-            print(f"\n{name}:\nFrom {fr0m} to {t0}\nVia {via}")
-
-    print("\n\n===== MULTIPOLYGONS =====\n")
-    """
-
     if (doMixedUse):
         dwellings = []
 
         schools = []
         retail = []
         supermarkets = []
+        busStops = []
+
+        
+        for i in tqdm(range(len(city["points"])), desc="Getting point data"):
+            struct = city["points"].loc[i]
+            coordinate = struct["coordinates"]
+            
+            [building, amenity, shop, highway, railway] = findTags(struct, ["building", "amenity", "shop", "highway", "railway"])
+
+            if (highway == "bus_stop" or railway == "tram_stop"):
+                busStops.append(coordinate)
+
+            elif (building == "retail"):
+                retail.append(coordinate)
+            
+                if (shop == "supermarket"):
+                    supermarkets.append(coordinate)
+            
+            elif (amenity == "school"):
+                schools.append(coordinate)
 
         for i in tqdm(range(len(city["multipolygons"])), desc="Getting building data"):
             struct = city["multipolygons"].loc[i]
@@ -117,12 +110,13 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True)
             elif (amenity == "school"):
                 schools.append(coordinate)
         
-        [schools, retail, supermarkets] = sortByLongitude([schools, retail, supermarkets])
+        [schools, retail, supermarkets, busStops] = sortByLongitude([schools, retail, supermarkets, busStops])
         
         totalHouseholds = 0
         totalDistance_Schools = 0
         totalDistance_Shops = 0
         totalDistance_Supermarkets = 0
+        totalDistance_BusStops = 0
         for h in tqdm(dwellings, desc="Analysing zoning"):
             coords = h[1]
             numHouseholds = h[0]
@@ -140,8 +134,13 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True)
             
             if (len(supermarkets) != 0):
                 totalDistance_Supermarkets += numHouseholds * findMinDistance(coords, supermarkets)
+            
+            if (len(busStops) != 0):
+                totalDistance_BusStops += numHouseholds * findMinDistance(coords, busStops)
                 
             totalHouseholds += numHouseholds
+        
+        print()
 
         if (totalDistance_Schools != 0):
             avgDistanceToSchool = totalDistance_Schools / totalHouseholds
@@ -154,12 +153,94 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True)
         if (totalDistance_Supermarkets != 0):
             avgDistanceToSupermarkets = totalDistance_Supermarkets / totalHouseholds
             print(f"Average distance to supermarket: {avgDistanceToSupermarkets*1000:.0f}m")
-
+        
+        if (totalDistance_BusStops != 0):
+            avgDistanceToBusStops = totalDistance_BusStops / totalHouseholds
+            print(f"Average distance to bus (or tram) stop: {avgDistanceToBusStops*1000:.0f}m")
     
+
+
+    if (doInfrastructureComparison):
+        parkingSpaces = 0
+        busStops = 0
+        stations = 0
+        
+        for i in tqdm(range(len(city["points"])), desc="Getting point data"):
+            struct = city["points"].loc[i]
+            coordinate = struct["coordinates"]
+            
+            [amenity, capacity, highway, railway] = findTags(struct, ["amenity", "capacity", "highway", "railway"])
+
+            if (highway == "bus_stop" or railway == "tram_stop"):
+                busStops += 1
+            
+            elif (railway == "station" or railway == "halt"):
+                stations += 1
+            
+            elif (amenity == "parking"):
+                if (type(capacity) != int):
+                    try:
+                        capacity = int(capacity)
+                    except:
+                        capacity = 100
+                
+                parkingSpaces += capacity
+        
+
+        for i in tqdm(range(len(city["multipolygons"])), desc="Getting building data"):
+            struct = city["multipolygons"].loc[i]
+            coordinate = getCoord(struct["coordinates"])
+            
+            [amenity, capacity] = findTags(struct, ["amenity", "capacity"])
+            
+            if (amenity == "parking"):
+                if (type(capacity) != int):
+                    try:
+                        capacity = int(capacity)
+                    except:
+                        capacity = 200
+                
+                parkingSpaces += capacity
+        
+        print()
+        
+        if (parkingSpaces > 0):
+            if (busStops > 0):
+                parkingSpacesPerBusStop = parkingSpaces / busStops
+                print(f"Parking spaces per bus (or tram) stop: {parkingSpacesPerBusStop}")
+            
+            if (stations > 0):
+                parkingSpacesPerStation = parkingSpaces / stations
+                print(f"Parking spaces per train station: {parkingSpacesPerStation}")
+            
+            if (busStops > 0 and stations > 0):
+                weightedRatio = parkingSpaces / (stations * 20 + busStops)
+                print(f"Parking spaces divided by (train stations x 20 + bus stops): {weightedRatio}")
+
+
     """
+    print("\n\n===== LINES =====\n")
+    for i in range(len(city["lines"])):
+        struct = city["lines"].loc[i]
+
+        name = tagSearch(struct, "name")
+        railway = tagSearch(struct, "railway")
+
+        if (railway == "station" and name != None):
+            print(name)
+    
+
+    print("\n\n===== MULTILINESTRINGS =====\n")
+    for i in range(len(city["multilinestrings"])):
+        struct = city["multilinestrings"].loc[i]
+
+        [name, route, fr0m, t0, via] = findTags(struct, ["name", "route", "from", "to", "via"])
+
+        if (route == "train"):
+            print(f"\n{name}:\nFrom {fr0m} to {t0}\nVia {via}")
+    
+
     print("\n\n===== OTHER RELATIONS =====\n")
-
-
     for i in range(len(city["other_relations"])):
         struct = city["other_relations"].loc[i]
 
@@ -168,43 +249,4 @@ def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True)
 
         if (railway == "station" and name != None):
             print(name)
-    """
-
-
-if (__name__ == "__main__"):
-    parseAll = False
-    analyseAll = True
-    all = [
-        "data/Southfields.osm.pbf",
-        "data/Durham.osm.pbf",
-        "data/Newcastle.osm.pbf",
-        "data/SouthLondon.osm.pbf",
-        "data/Glasgow.osm.pbf",
-        "data/Edinburgh.osm.pbf",
-        "data/NorthLondon.osm.pbf",
-        "data/Seoul.osm.pbf",
-        "data/Vienna.osm.pbf",
-        "data/CentralLondon.osm.pbf",
-        "data/London.osm.pbf",
-        "data/NewYork.osm.pbf",
-        #"data/England.osm.pbf"
-    ]
-
-    new = [
-        "data/SouthLondon.osm.pbf",
-        "data/NorthLondon.osm.pbf",
-        "data/CentralLondon.osm.pbf"
-    ]
-
-    citiesToUse = all
-
-    if (parseAll):
-        for city in citiesToUse:
-            parsePBF(city)
-
-    if (analyseAll):
-        for city in citiesToUse:
-            generateScore(parsePBF(city), doTransport=True, doMixedUse=False)
-    """
-    generateScore(parsePBF("data/Seoul.osm.pbf"), doTransport=False, doMixedUse=True)
     """
