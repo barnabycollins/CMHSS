@@ -2,7 +2,7 @@ from utils import *
 from tqdm import tqdm
 import math
 
-def generateScore(city: dict, doTransport = True, doMixedUse = True):
+def generateScore(city: dict, doTransport: bool = True, doMixedUse: bool = True):
     """Generates and returns an accessibility score for a given parsed city file"""
     print("Analysing city...\n")    
 
@@ -87,12 +87,14 @@ def generateScore(city: dict, doTransport = True, doMixedUse = True):
         dwellings = []
 
         schools = []
+        retail = []
+        supermarkets = []
 
         for i in tqdm(range(len(city["multipolygons"])), desc="Getting building data"):
             struct = city["multipolygons"].loc[i]
             coordinate = getCoord(struct["coordinates"])
 
-            [building, buildingFlats, amenity] = findTags(struct, ["building", "building:flats", "amenity"])
+            [building, buildingFlats, amenity, shop] = findTags(struct, ["building", "building:flats", "amenity", "shop"])
             
             if (buildingFlats != None):
                 dwellings.append((buildingFlats, coordinate))
@@ -106,32 +108,52 @@ def generateScore(city: dict, doTransport = True, doMixedUse = True):
             elif (building == "residential"):
                 dwellings.append((3, coordinate))
             
+            elif (building == "retail"):
+                retail.append(coordinate)
+
+                if (shop == "supermarket"):
+                    supermarkets.append(coordinate)
+            
             elif (amenity == "school"):
                 schools.append(coordinate)
         
-        schools = sorted(schools, key=lambda x: x[0])
-
+        [schools, retail, supermarkets] = sortByLongitude([schools, retail, supermarkets])
+        
         totalHouseholds = 0
-        totalDistance = 0
+        totalDistance_Schools = 0
+        totalDistance_Shops = 0
+        totalDistance_Supermarkets = 0
         for h in tqdm(dwellings, desc="Analysing zoning"):
             coords = h[1]
             numHouseholds = h[0]
-
-            nearest = findMinDistance(coords, schools)
-
             if (type(numHouseholds) != int):
                 try:
                     numHouseholds = int(numHouseholds)
-                
                 except:
                     numHouseholds = 5
+            
+            if (len(schools) != 0):
+                totalDistance_Schools += numHouseholds * findMinDistance(coords, schools)
+            
+            if (len(retail) != 0):
+                totalDistance_Shops += numHouseholds * findMinDistance(coords, retail)
+            
+            if (len(supermarkets) != 0):
+                totalDistance_Supermarkets += numHouseholds * findMinDistance(coords, supermarkets)
                 
             totalHouseholds += numHouseholds
-            totalDistance += numHouseholds * nearest
 
-        avgDistanceToSchool = totalDistance / totalHouseholds
+        if (totalDistance_Schools != 0):
+            avgDistanceToSchool = totalDistance_Schools / totalHouseholds
+            print(f"Average distance to school: {avgDistanceToSchool*1000:.0f}m")
         
-        print(f"Average distance to school: {avgDistanceToSchool*1000:.0f}m")
+        if (totalDistance_Shops != 0):
+            avgDistanceToShops = totalDistance_Shops / totalHouseholds
+            print(f"Average distance to shop: {avgDistanceToShops*1000:.0f}m")
+        
+        if (totalDistance_Supermarkets != 0):
+            avgDistanceToSupermarkets = totalDistance_Supermarkets / totalHouseholds
+            print(f"Average distance to supermarket: {avgDistanceToSupermarkets*1000:.0f}m")
 
     
     """
@@ -150,18 +172,39 @@ def generateScore(city: dict, doTransport = True, doMixedUse = True):
 
 
 if (__name__ == "__main__"):
-    """
-    parsePBF("data/Southfields.osm.pbf")
-    parsePBF("data/Durham.osm.pbf")
-    parsePBF("data/Newcastle.osm.pbf")
-    parsePBF("data/Seoul.osm.pbf")
-    parsePBF("data/Vienna.osm.pbf")
-    parsePBF("data/Edinburgh.osm.pbf")
-    parsePBF("data/London.osm.pbf")
-    parsePBF("data/NewYork.osm.pbf")
-    parsePBF("data/England.osm.pbf")
-    """
+    parseAll = False
+    analyseAll = True
+    all = [
+        "data/Southfields.osm.pbf",
+        "data/Durham.osm.pbf",
+        "data/Newcastle.osm.pbf",
+        "data/SouthLondon.osm.pbf",
+        "data/Glasgow.osm.pbf",
+        "data/Edinburgh.osm.pbf",
+        "data/NorthLondon.osm.pbf",
+        "data/Seoul.osm.pbf",
+        "data/Vienna.osm.pbf",
+        "data/CentralLondon.osm.pbf",
+        "data/London.osm.pbf",
+        "data/NewYork.osm.pbf",
+        #"data/England.osm.pbf"
+    ]
 
-    #"""
-    generateScore(parsePBF("data/NewYork.osm.pbf"), doTransport=False, doMixedUse=True)
-    #"""
+    new = [
+        "data/SouthLondon.osm.pbf",
+        "data/NorthLondon.osm.pbf",
+        "data/CentralLondon.osm.pbf"
+    ]
+
+    citiesToUse = all
+
+    if (parseAll):
+        for city in citiesToUse:
+            parsePBF(city)
+
+    if (analyseAll):
+        for city in citiesToUse:
+            generateScore(parsePBF(city), doTransport=True, doMixedUse=False)
+    """
+    generateScore(parsePBF("data/Seoul.osm.pbf"), doTransport=False, doMixedUse=True)
+    """

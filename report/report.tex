@@ -88,7 +88,7 @@
 
 \section{Introduction}
 
-As an occasional OpenStreetMap (OSM) contributor, I decided that using data directly from OSM in my assignment would be interesting. When a friend told me about a problem she had read about in \textit{Invisible Women} by Caroline Criado Pérez, I decided to try and produce a tool that is applicable to this issue.
+As an occasional OpenStreetMap (OSM) contributor, I decided that using data directly from OSM in my assignment would be interesting. When a friend told me about a problem she had read about in \textit{Invisible Women} by Caroline Criado Pérez \citeyear{Perez2019}, I decided to try and produce a tool that is applicable to this issue.
 
 The problem is that cities are designed by commuting men, and therefore can end up optimised for this subset of the population, to the detriment of others. The book specifically discusses women, who have different travel patterns to men due to their (usually) increased care responsibilities and different way of life.
 
@@ -115,6 +115,9 @@ PyDriosm is an open-source library which provides features for the parsing and s
 
 When installing on Windows 10 / Python 3.9.2, I had some trouble building the \texttt{GDAL} dependency - resolving this required installing Visual C++ build tools from Microsoft and then manually installing \texttt{GDAL} itself using a wheel file. More information on this can be found in the \href{https://pydriosm.readthedocs.io/en/latest/installation.html}{PyDriosm documentation}.
 
+\subsection{tqdm}
+\href{https://tqdm.github.io/}{\texttt{tqdm}} is a lightweight Python module for adding progress bars to iterative processes. I have employed it here to monitor progress on analysis steps.
+
 \subsection{Pickle?}
 
 \subsection{Shapely?}
@@ -127,11 +130,15 @@ Methods that I came up with to measure a city's accessibility are as follows:
 
 Firstly, I sought to address the problem of transit system design. My idea was to find the number of 'routes' (eg, train lines, bus routes) that each station / stop was on, for every station / stop, and then find the standard deviation across the city. A large standard deviation would indicate the presence of both many highly-connected stations and many poorly-connected stations, which would be most likely caused by a radial structure with poorly-connected suburban transport links and a strongly-connected 'downtown' area. Conversely, a low standard deviation would indicate even distribution of transport links across the city, and therefore increased accessibility for those that do not commute into the city to work.
 
-Unfortunately, upon attempting to access this data, I found that the majority of stations simply are not tagged with any information on which route(s) they are on. Urban metro networks such as the London Underground do appear to store line information on a per-station basis, but these are the exception rather than the norm. The biggest downside here is that the areas that are not served by the metro - ie, the suburbs - will not be accurately usable. Similarly, bus stops also are not tagged with the bus routes that stop there.
+Unfortunately, upon attempting to access this data, I found that the majority of stations simply are not tagged with any information on which route(s) they are on. Some examples of urban metro networks do store limited line information, but these are the exception rather than the norm. Indeed, from my limited testing of various cities, London was the only one which stored a list of lines with each station, and even that was only for Underground lines. Similarly, bus stops also are not tagged with the bus routes that stop there.
 
 I believe that the problem here is that OSM data is designed to provide information to be used to create a graphical map - and more nuanced data on how stations relate to one another is simply not required. Given more time, I would try to cross-reference railway line data with station co-ordinates, or use alternative data sources such as \href{https://www.openrailwaymap.org/}{OpenRailwayMap}, but this was unfortunately not feasible for this project's timeframe. For the time being, I have implemented it anyway, assigning stations with no tagged lines a number of lines of 1, but also provide the percentage of stations with no tagged lines in order to allow the user to judge the reliability of the metric.
 
 I also had the idea of measuring the presence of bike share schemes (for example, London's \href{https://tfl.gov.uk/modes/cycling/santander-cycles}{Santander Cycles} system), but articles I found on these appear to report that their benefits for non-commuters are inconclusive because they are typically optimised for city-centre commuter use rather than more local suburban journeys \parencite{Beecham2014}. Since the level of benefit for non-commuters versus commuters is not agreed upon, I decided to omit processing them.
+
+One method with which I did have some success was attempting to measure the level of zoning. While areas of cities are traditionally allocated specific purposes (residential, retail, industrial etc), in a practice known as single-use zoning, \cite{Perez2019} points out that this method of planning hugely hinders those who don't have access to a car, or live in areas with poorer public transport links. Cities like Vienna have had more success with mixed-use zoning: the design of cities where all residential areas are constructed alongside amenities such as schools, playgrounds, doctors' surgeries and shops. This ensures that the majority of services can be found within walking distance of a house, and also increases the perceived safety of residential areas through improved lighting and increased night-time activity.
+
+Therefore, I decided to measure the average distance from a house to the nearest instance of each of these services. In order to avoid exhaustively checking the distance to, for example, every school in the city, for each house, I came up with an idea: finding a school that's somewhat near the given house through sampling and then limiting the search to only schools that have a longitude within that distance of the house's longitude. This worked well, removing complexity by over half.
 
 
 

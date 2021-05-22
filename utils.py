@@ -44,7 +44,7 @@ def parsePBF(cityFile: str, useCache: bool = True, writeCache: bool = True):
     return city
 
 
-def tagSearch(tags, item):
+def tagSearch(tags: dict, item: str):
     """Searches for a tag with the name 'item' in the given structure.
         Returns the value of that tag, or otherwise None if not present.
         - tags: the structure to search
@@ -66,7 +66,7 @@ def tagSearch(tags, item):
     return tags[item]
 
 
-def findTags(struct, tags):
+def findTags(struct: dict, tags: list):
     """Bulk searches for tags in a structure, and returns them in the same order as given.
         - struct: the structure to be searched
         - tags: an ordered list of tag names to be returned in a list with the same order
@@ -78,7 +78,7 @@ def findTags(struct, tags):
     return out
 
 
-def getCoord(coordinates):
+def getCoord(coordinates: list):
     """Returns a single co-ordinate pair from the given arbitrary set of co-ordinates
         Recursively traverses down the layers of a nested list until a pair of floats is located.
         Useful as a metric for roughly where an object is.
@@ -95,7 +95,7 @@ def getCoord(coordinates):
             return None
 
 
-def findDistance(coord1, coord2):
+def findDistance(coord1: list, coord2: list):
     """Calculates the rough surface distance between two lat/long co-ordinate pairs
         Adapted from https://stackoverflow.com/a/19412565
         - coord1: the first co-ordinate
@@ -121,7 +121,7 @@ def findDistance(coord1, coord2):
     return R * c
 
 
-def findMinDistance_Naive(centre, locations):
+def findMinDistance_Naive(centre: list, locations: list):
     """Exhaustively enumerates locations to find the nearest one to the centre point,
         and returns the distance between these two points.
         - centre: the reference point to search for nearest neighbours to
@@ -135,7 +135,7 @@ def findMinDistance_Naive(centre, locations):
     return min(distances)
 
 
-def findLongitudeRange(centre, distance):
+def findLongitudeRange(centre: list, distance: list):
     """Given a distance and a centre point, find the two longitudes
         at that distance east and west of that point.
         - centre: the point to compute the range either side of
@@ -149,7 +149,17 @@ def findLongitudeRange(centre, distance):
     return (centre - dL, centre + dL)
 
 
-def findMinDistance(centre, locations):
+def sortByLongitude(lists: list):
+    """Sorts the given list of co-ordinate lists by longitude and returns them (in order)."""
+
+    sortedLists = []
+    for item in lists:
+        sortedLists.append(sorted(item, key=lambda x: x[0]))
+    
+    return sortedLists
+
+
+def findMinDistance(centre: list, locations: list):
     """Finds the distance from 'centre' to the nearest co-ordinate in 'locations'.
         First samples a few locations, then takes the distance to the nearest and
         ignores any co-ordinates that are further in longitude than that distance.
