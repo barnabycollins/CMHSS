@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 def analyseCity(city: dict, doTransitNetwork: bool = True, doMixedUse: bool = True, doInfrastructureComparison: bool = True):
     """Generates and returns accessibility for a given parsed city file.
+        Booleans are true (ie, all analysis is performed) by default.
         - city: an OSM PBF file, after being parsed by utils.parsePBF()
         - doTransitNetwork: Boolean deciding whether to find standard deviation in line connectedness across stations
         - doMixedUse: Boolean deciding whether to measure average distances between houses and facilities

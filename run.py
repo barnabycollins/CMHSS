@@ -7,6 +7,8 @@ from utils import parsePBF
 #   for other exported maps :)
 
 # All cities used (in ascending order of file size)
+# These exact files can be downloaded from the link in README.txt, but any file
+#   extracted using the tool at extract.BBBike.org will work!
 all = [
     "data/Durham.osm.pbf",
     "data/Oxford.osm.pbf",
