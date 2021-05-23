@@ -26,7 +26,7 @@ all = [
 ]
 
 subset = [
-    "data/Durham.osm.pbf",
+    "data/NorthLondon.osm.pbf",
 ]
 
 # Use this to decide whether to run for all cities or for a subset as defined above

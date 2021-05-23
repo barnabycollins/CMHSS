@@ -3,10 +3,10 @@ from tqdm import tqdm
 
 def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, doInfrastructureComparison: bool = True):
     """Generates and returns an accessibility score for a given parsed city file"""
-    print("Analysing city...\n")    
+    print("Beginning analysis...\n\n")
 
     if (doTransport):
-        print(f"\n\n===== METRO / TRAIN NETWORK REPORT =====")
+        print(f"===== TRANSPORT NETWORK DESIGN =====")
         
         stationLineCounts = []
         totalStations = 0
@@ -42,7 +42,7 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
         if (percentWithNoLines == 0):
             qualityStatement = f"\nAll stations had line information. This value is very reliable."
         elif(percentWithNoLines > 95):
-            print(f"\nAn extremely small proportion ({100-percentWithNoLines:.1f}%) of stations had line data. For this reason, data is not reliable.")
+            print(f"An extremely small proportion ({100-percentWithNoLines:.1f}%) of stations had line data. For this reason, data is not reliable.")
             skipSection = True
         elif (percentWithNoLines > 50):
             qualityStatement = "\nThis is over 50%: treat the returned standard deviation value with caution as there are a significant number of lines that have gone unaccounted for!"
@@ -50,10 +50,14 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
             qualityStatement = "\nThis is less than 20%, so this value is reasonably reliable."
 
         if (not skipSection):
-            print(f"Standard deviation in number of lines per station is {std}.")
+            print(f"Standard deviation in number of lines per station is {std:.3f}.")
             print(f"{percentWithNoLines:.1f}% of stations had no line information.{qualityStatement}")
 
+        print("\n")
+
     if (doMixedUse):
+        print(f"===== MIXED-USE ZONING =====")
+
         dwellings = []
 
         schools = []
@@ -190,9 +194,11 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
             avgDistanceToDoctors = totalDistance_Doctors / totalHouseholds
             print(f"Average distance to doctor: {avgDistanceToDoctors*1000:.0f}m")
     
-
+        print("\n")
 
     if (doInfrastructureComparison):
+        print(f"===== INFRASTRUCTURE RATIOS =====")
+
         parkingSpaces = 0
         busStops = 0
         stations = 0
@@ -248,37 +254,3 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
             if (busStops > 0 and stations > 0):
                 weightedRatio = parkingSpaces / (stations * 20 + busStops)
                 print(f"Parking spaces divided by (train stations x 20 + bus stops): {weightedRatio:.2f}")
-
-
-    """
-    print("\n\n===== LINES =====\n")
-    for i in range(len(city["lines"])):
-        struct = city["lines"].loc[i]
-
-        name = tagSearch(struct, "name")
-        railway = tagSearch(struct, "railway")
-
-        if (railway == "station" and name != None):
-            print(name)
-    
-
-    print("\n\n===== MULTILINESTRINGS =====\n")
-    for i in range(len(city["multilinestrings"])):
-        struct = city["multilinestrings"].loc[i]
-
-        [name, route, fr0m, t0, via] = findTags(struct, ["name", "route", "from", "to", "via"])
-
-        if (route == "train"):
-            print(f"\n{name}:\nFrom {fr0m} to {t0}\nVia {via}")
-    
-
-    print("\n\n===== OTHER RELATIONS =====\n")
-    for i in range(len(city["other_relations"])):
-        struct = city["other_relations"].loc[i]
-
-        name = tagSearch(struct, "name")
-        railway = tagSearch(struct, "railway")
-
-        if (railway == "station" and name != None):
-            print(name)
-    """
