@@ -27,9 +27,7 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
                 else:
                     numWithNoLines += 1
 
-                #stations[name] = num_lines
                 stationLineCounts.append(num_lines)
-        
         
         # based on https://blog.finxter.com/how-to-get-the-standard-deviation-of-a-python-list/
         averageNumLines = sum(stationLineCounts) / len(stationLineCounts)

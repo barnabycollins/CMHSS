@@ -135,3 +135,4 @@ maps/
 report/*
 !report/*.tex
 !report/*.bib
+!report/*.png

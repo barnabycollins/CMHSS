@@ -9,12 +9,19 @@ def parsePBF(cityFile: str, useCache: bool = True, writeCache: bool = True):
     """Parses a named .osm.pbf file into a Python structure and returns it.
         Writes loaded files to a cache directory to save time in future, and
         reads any matching cache file back if it exists (both by default)
-        - cityFile: should be relative to the working directory or otherwise absolute
+        - cityFile: should be relative to the working directory or otherwise absolute.
+                    Filename should only include alphanumeric characters and underscores
         - useCache: set false to force reading from the PBF instead of cache
         - writeCache: set false to stop the function writing to cache
     """
 
-    cityName = re.search(r'^(?:.*\/)?([a-zA-Z]+)\.osm\.pbf$', cityFile).group(1)
+    # Filename should only include alphanumeric characters and underscores
+    parsedFileName = re.search(r'^(?:.*\/)?([a-zA-Z0-9_]+)\.osm\.pbf$', cityFile)
+
+    if (parsedFileName == None):
+        raise ValueError("Invalid PBF file name!")
+
+    cityName = parsedFileName.group(1)
     cacheName = f"./cache/{cityName}.pickle"
 
     if useCache:
