@@ -1,6 +1,5 @@
 from utils import *
 from tqdm import tqdm
-import math
 
 def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, doInfrastructureComparison: bool = True):
     """Generates and returns an accessibility score for a given parsed city file"""
@@ -44,7 +43,7 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
         skipSection = False
         if (percentWithNoLines == 0):
             qualityStatement = f"\nAll stations had line information. This value is very reliable."
-        elif(percentWithNoLines > 90):
+        elif(percentWithNoLines > 95):
             print(f"\nAn extremely small proportion ({100-percentWithNoLines:.1f}%) of stations had line data. For this reason, data is not reliable.")
             skipSection = True
         elif (percentWithNoLines > 50):
@@ -73,10 +72,7 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
             
             [building, amenity, shop, highway, railway, leisure] = findTags(struct, ["building", "amenity", "shop", "highway", "railway", "leisure"])
 
-            if (amenity == "doctors"):
-                doctors.append(coordinate)
-
-            """if (highway == "bus_stop" or railway == "tram_stop"):
+            if (highway == "bus_stop" or railway == "tram_stop"):
                 busStops.append(coordinate)
 
             elif (building == "retail"):
@@ -92,7 +88,7 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
                 playgrounds.append(coordinate)
             
             elif (amenity == "doctors"):
-                doctors.append(coordinate)"""
+                doctors.append(coordinate)
 
         # AREAS
         for i in tqdm(range(len(city["multipolygons"])), desc="Getting building data"):
@@ -116,7 +112,7 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
             elif (amenity == "doctors"):
                 doctors.append(coordinate)
             
-            """elif (building == "retail"):
+            elif (building == "retail"):
                 retail.append(coordinate)
 
                 if (shop == "supermarket"):
@@ -129,7 +125,7 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
                 playgrounds.append(coordinate)
             
             elif (amenity == "doctors"):
-                doctors.append(coordinate)"""
+                doctors.append(coordinate)
         
 
         [schools, retail, supermarkets, busStops, playgrounds, doctors] = sortByLongitude([schools, retail, supermarkets, busStops, playgrounds, doctors])
@@ -245,15 +241,15 @@ def analyseCity(city: dict, doTransport: bool = True, doMixedUse: bool = True, d
         if (parkingSpaces > 0):
             if (busStops > 0):
                 parkingSpacesPerBusStop = parkingSpaces / busStops
-                print(f"Parking spaces per bus (or tram) stop: {parkingSpacesPerBusStop}")
+                print(f"Parking spaces per bus (or tram) stop: {parkingSpacesPerBusStop:.2f}")
             
             if (stations > 0):
                 parkingSpacesPerStation = parkingSpaces / stations
-                print(f"Parking spaces per train station: {parkingSpacesPerStation}")
+                print(f"Parking spaces per train station: {parkingSpacesPerStation:.2f}")
             
             if (busStops > 0 and stations > 0):
                 weightedRatio = parkingSpaces / (stations * 20 + busStops)
-                print(f"Parking spaces divided by (train stations x 20 + bus stops): {weightedRatio}")
+                print(f"Parking spaces divided by (train stations x 20 + bus stops): {weightedRatio:.2f}")
 
 
     """

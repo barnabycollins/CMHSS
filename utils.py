@@ -39,7 +39,7 @@ def parsePBF(cityFile: str, useCache: bool = True, writeCache: bool = True):
         if (writeCache):
             with open(cacheName, 'wb') as file:
                 pickle.dump(city, file)
-            print(f"Wrote pickle file to '{cacheName}''.")
+            print(f"Wrote pickle file to '{cacheName}'.")
 
     return city
 
