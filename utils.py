@@ -9,11 +9,13 @@ def parsePBF(cityFile: str, useCache: bool = True, writeCache: bool = True):
     """Parses a named .osm.pbf file into a Python structure and returns it.
         Writes loaded files to a cache directory to save time in future, and
         reads any matching cache file back if it exists (both by default)
-        - cityFile: should be relative to the working directory or otherwise absolute.
+        - cityFile: should be relative to the working directory or absolute.
                     Filename should only include alphanumeric characters and underscores
         - useCache: set false to force reading from the PBF instead of cache
         - writeCache: set false to stop the function writing to cache
     """
+
+    print()
 
     # Filename should only include alphanumeric characters and underscores
     parsedFileName = re.search(r'^(?:.*\/)?([a-zA-Z0-9_]+)\.osm\.pbf$', cityFile)
@@ -47,6 +49,8 @@ def parsePBF(cityFile: str, useCache: bool = True, writeCache: bool = True):
             with open(cacheName, 'wb') as file:
                 pickle.dump(city, file)
             print(f"Wrote pickle file to '{cacheName}'.")
+
+    print()
 
     return city
 
@@ -131,6 +135,7 @@ def findDistance(coord1: list, coord2: list):
 def findMinDistance_Naive(centre: list, locations: list):
     """Exhaustively enumerates locations to find the nearest one to the centre point,
         and returns the distance between these two points.
+        Not used in the code; can be substituted with findMinDistance() for comparison
         - centre: the reference point to search for nearest neighbours to
         - locations: the list of co-ordinates to search for the neighbours/
     """

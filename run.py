@@ -1,6 +1,11 @@
 from main import analyseCity
 from utils import parsePBF
 
+# ===== HELPER SCRIPT =====
+# This program can be used as a starting point to run analysis on cities in batches!
+# It was written for the datasets I used, but obviously can be trivially adjusted 
+#   for other exported maps :)
+
 # All cities used (in ascending order of file size)
 all = [
     "data/Durham.osm.pbf",
@@ -25,8 +30,9 @@ all = [
     "data/NewYork.osm.pbf"
 ]
 
+# Some subset of cities (to be edited as desired)
 subset = [
-    "data/NorthLondon.osm.pbf",
+    "data/Durham.osm.pbf",
 ]
 
 # Use this to decide whether to run for all cities or for a subset as defined above
@@ -41,14 +47,14 @@ analyse = True
 if (parse):
     for city in citiesToUse:
         parsePBF(city)
-        print()
+        print("\n")
 
 if (analyse):
     for city in citiesToUse:
         analyseCity(
             parsePBF(city),
-            doTransport = True,
+            doTransitNetwork = True,
             doMixedUse = True,
             doInfrastructureComparison = True
         )
-        print()
+        print("\n")
